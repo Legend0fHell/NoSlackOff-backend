@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import {initWebRoutes} from "./routes.js";
+import {initKnex} from "./db.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({extended: false}));
 
 initWebRoutes(app);
+await initKnex();
 
 app.listen(process.env.BACKEND_PORT || 3000, () => {
     console.log("No time for you to slacking off now!! I'm staring at you from port " + (process.env.PORT || 3000));

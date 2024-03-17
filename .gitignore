@@ -7,3 +7,4 @@ package-lock.json
 firebaseAdminPK.json
 dist
 .VSCodeCounter
+*.sqlite3*
