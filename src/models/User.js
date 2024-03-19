@@ -1,16 +1,14 @@
-import {b56gen} from "../utils/random_gen.js";
+import {generateBase56} from "../utils.js";
 import {db} from "../db.js";
 
 export class User {
-    constructor(data, user_id = b56gen(6), powerups = []) {
+    constructor(data, user_id = generateBase56(6), powerups = []) {
         if (data === undefined || data === null) {
             return null;
         }
 
-        if (data !== undefined && data !== null && data.constructor == Object) {
-            this.user_id = data.user_id;
-            this.username = data.username;
-            this.powerups = data.powerups;
+        if (data.constructor == Object) {
+            Object.assign(this, data);
             return;
         }
 
@@ -64,6 +62,28 @@ export class User {
     }
 }
 
+export const createUserTable = async () => {
+    return new Promise((resolve, reject) => {
+        db.schema.hasTable("users").then((exists) => {
+            if (exists) return resolve();
+            db.schema.createTable("users", (table) => {
+                table.increments("id");
+                table.string("user_id").notNullable();
+                table.string("username").notNullable();
+                table.jsonb("powerups").notNullable();
+            }).then(() => {
+                console.log("[Database] Created users table");
+                resolve();
+            }).catch((err) => {
+                return reject(err);
+            });
+        }).then(() => {
+            return resolve();
+        }).catch((err) => {
+            return reject(err);
+        });
+    });
+};
 
 export const findUser = async (user_id) => {
     return new Promise((resolve, reject) => {

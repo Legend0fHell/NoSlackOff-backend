@@ -1,16 +1,27 @@
+import {getCurrentTimestamp} from "../utils.js";
+import {db} from "../db.js";
 
 export class Session {
-    constructor(user_id, start, end) {
-        this.user_id = user_id;
-        this.start = start;
-        this.end = end;
+    constructor(data, start_at = getCurrentTimestamp(), end_at = getCurrentTimestamp() + 315569520000) {
+        if (data === undefined || data === null) {
+            return null;
+        }
+
+        if (data.constructor == Object) {
+            Object.assign(this, data);
+            return;
+        }
+
+        this.user_id = data;
+        this.start_at = start_at;
+        this.end_at = end_at;
     }
 
     toJSON() {
         return {
             user_id: this.user_id,
-            start: this.start,
-            end: this.end,
+            start_at: this.start_at,
+            end_at: this.end_at,
         };
     }
 
@@ -19,22 +30,41 @@ export class Session {
     }
 
     get getStartTime() {
-        return this.start;
+        return this.start_at;
     }
 
     get getEndTime() {
-        return this.end;
+        return this.end_at;
     }
 
-    set setUserId(user_id) {
-        this.user_id = user_id;
+    get getLength() {
+        return this.end_at - this.start_at;
     }
 
-    set setStartTime(start) {
-        this.start = start;
-    }
-
-    set setEndTime(end) {
-        this.end = end;
+    set setEndTime(end_at) {
+        this.end_at = end_at;
     }
 }
+
+export const createSessionTable = async () => {
+    return new Promise((resolve, reject) => {
+        db.schema.hasTable("sessions").then((exists) => {
+            if (exists) return resolve();
+            db.schema.createTable("sessions", (table) => {
+                table.increments("id");
+                table.string("user_id").notNullable();
+                table.timestamp("start_at").notNullable();
+                table.timestamp("end_at").notNullable();
+            }).then(() => {
+                console.log("[Database] Created sessions table");
+                resolve();
+            }).catch((err) => {
+                return reject(err);
+            });
+        }).then(() => {
+            return resolve();
+        }).catch((err) => {
+            return reject(err);
+        });
+    });
+};
