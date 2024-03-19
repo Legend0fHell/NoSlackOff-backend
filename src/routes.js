@@ -21,6 +21,9 @@ export const initWebRoutes = (app, debug) => {
     app.route("/session/get_user")
         .get(session_ctrl.getUserSessions);
 
+    app.route("/session/get_user_length")
+        .get(session_ctrl.getUserSessionLength);
+
     if (debug) {
         app.route("/debug/db/drop")
             .get(debug_ctrl.debugDropAllTables);

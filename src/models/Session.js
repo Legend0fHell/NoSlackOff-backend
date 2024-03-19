@@ -161,15 +161,16 @@ export class Session {
                 .orderBy("end_at", "desc")
                 .then((rows) => {
                     const results = [];
+                    let right_bound = new Date(to);
                     let left_bound = new Date(to);
-                    let right_bound = left_bound;
                     left_bound.setHours(0, 0, 0, 0);
+                    if (left_bound.getTime() < from) left_bound = new Date(from);
                     let total_length = 0;
                     for (const row of rows) {
                         do {
                             if (row.start_at < left_bound.getTime()) {
+                                right_bound = new Date(left_bound);
                                 left_bound = new Date(row.end_at);
-                                right_bound = left_bound;
                                 left_bound.setHours(0, 0, 0, 0);
                                 if (left_bound.getTime() < from) left_bound = new Date(from);
                                 if (total_length > 0) {
