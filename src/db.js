@@ -31,15 +31,20 @@ db.raw("PRAGMA journal_mode = WAL;").then(() => {
 import {createUserTable} from "./models/User.js";
 import {createSessionTable} from "./models/Session.js";
 
-const createTables = async () => {
+export const createAllTables = async () => {
     await createUserTable();
     await createSessionTable();
+};
+
+export const dropAllTables = async () => {
+    await db.schema.dropTableIfExists("users");
+    await db.schema.dropTableIfExists("sessions");
 };
 
 export const initKnex = async () => {
     try {
         db.raw("PRAGMA journal_mode = WAL;").then(async () => {
-            await createTables();
+            await createAllTables();
         });
     } catch (err) {
         console.error(err);

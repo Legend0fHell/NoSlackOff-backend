@@ -14,19 +14,26 @@ export class User {
 
         this.user_id = user_id;
         this.username = data;
-
-        if (powerups !== undefined && powerups !== null && powerups.constructor == Array) {
-            this.powerups = JSON.stringify(powerups);
+        if (powerups !== undefined && powerups !== null && powerups.constructor == String) {
+            this.powerups = JSON.parse(powerups);
         } else {
             this.powerups = powerups;
         }
+    }
+
+    toDB() {
+        return {
+            user_id: this.getUserId,
+            username: this.getUsername,
+            powerups: JSON.stringify(this.getPowerups),
+        };
     }
 
     toJSON() {
         return {
             user_id: this.user_id,
             username: this.username,
-            powerups: JSON.parse(this.powerups),
+            powerups: this.powerups,
         };
     }
 
@@ -39,7 +46,7 @@ export class User {
     }
 
     get getPowerups() {
-        return JSON.parse(this.powerups);
+        return this.powerups;
     }
 
     set setUsername(username) {
@@ -48,15 +55,20 @@ export class User {
 
     registerUser() {
         return new Promise((resolve, reject) => {
-            db("users").where("user_id", this.user_id).first().then((row) => {
-                if (row) return reject(new Error("User already exists"));
-                db("users").insert(this).then((row) => {
-                    resolve(row);
-                }).catch((err) => {
-                    reject(err);
-                });
+            db("users").insert(this.toDB()).then((row) => {
+                resolve(row);
             }).catch((err) => {
-                return reject(err);
+                reject(err);
+            });
+        });
+    }
+
+    static findUser(user_id) {
+        return new Promise((resolve, reject) => {
+            db("users").where("user_id", user_id).first().then((row) => {
+                resolve(row ? new User(row) : null);
+            }).catch((err) => {
+                reject(err);
             });
         });
     }
@@ -81,16 +93,6 @@ export const createUserTable = async () => {
             return resolve();
         }).catch((err) => {
             return reject(err);
-        });
-    });
-};
-
-export const findUser = async (user_id) => {
-    return new Promise((resolve, reject) => {
-        db("users").where("user_id", user_id).first().then((row) => {
-            resolve(row ? new User(row) : null);
-        }).catch((err) => {
-            reject(err);
         });
     });
 };

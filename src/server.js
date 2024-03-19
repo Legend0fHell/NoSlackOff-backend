@@ -16,7 +16,11 @@ app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({extended: false}));
 
-initWebRoutes(app);
+if (process.env.DEBUG) {
+    console.log("[Debug] Debug mode is enabled. This is not recommended for production use.");
+}
+
+initWebRoutes(app, process.env.DEBUG);
 await initKnex();
 
 app.listen(process.env.BACKEND_PORT || 3000, () => {
