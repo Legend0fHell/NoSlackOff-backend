@@ -76,23 +76,19 @@ export class Session {
     endSession() {
         return new Promise((resolve, reject) => {
             const currentTimestamp = getCurrentTimestamp();
-            const subQuery = db("sessions")
+            db("sessions")
                 .where("session_id", this.getSessionId)
-                .andWhere("end_at", ">", currentTimestamp).first();
-            subQuery.then((row) => {
-                if (!row) {
-                    return reject(new Error("Session already ended"));
-                } else {
-                    this.setEndTime = currentTimestamp;
-                    subQuery.update({end_at: currentTimestamp}).then((row) => {
-                        return resolve(row);
-                    }).catch((err) => {
-                        return reject(err);
-                    });
-                }
-            }).catch((err) => {
-                return reject(err);
-            });
+                .andWhere("end_at", ">", currentTimestamp)
+                .update({end_at: currentTimestamp})
+                .then((row) => {
+                    if (row) {
+                        this.setEndTime = currentTimestamp;
+                        return resolve();
+                    }
+                    return reject(new Error("Invalid session or session already ended"));
+                }).catch((err) => {
+                    return reject(err);
+                });
         });
     }
 
@@ -124,13 +120,17 @@ export class Session {
         });
     }
 
-    static findSession(session_id) {
+    static findSession(session_id, activeRequired = false) {
         return new Promise((resolve, reject) => {
-            db("sessions").where("session_id", session_id).first().then((row) => {
-                resolve(row ? new Session(row) : null);
-            }).catch((err) => {
-                reject(err);
-            });
+            db("sessions")
+                .where("session_id", session_id)
+                .andWhere("end_at", ">", activeRequired ? getCurrentTimestamp() : 0)
+                .first()
+                .then((row) => {
+                    resolve(row ? new Session(row) : null);
+                }).catch((err) => {
+                    reject(err);
+                });
         });
     }
 

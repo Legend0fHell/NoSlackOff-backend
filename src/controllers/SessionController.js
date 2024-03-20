@@ -36,8 +36,8 @@ export const endSession = async (req, res) => {
             if (!session) return res.json(new Response("err", "No active session found"));
         } else if (req.body.session_id) {
             const session_id = req.body.session_id;
-            session = await Session.findSession(session_id);
-            if (!session) return res.json(new Response("err", "Session not found"));
+            session = await Session.findSession(session_id, true);
+            if (!session) return res.json(new Response("err", "Session not found or not active"));
         } else {
             return res.json(new Response("err", "No user_id or session_id provided"));
         }
